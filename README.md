@@ -23,9 +23,16 @@ The full problem definition and business case is in [docs/M1_Problem_Definition_
 | M5 Deployment prototype | FastAPI service, Docker, monitoring, fallbacks | Planned |
 | M6 Final delivery | Report, live demo, presentation | Planned |
 
-## The corpus (M2)
+## The corpora (M2)
 
-6,802 documents from 1,100 synthetic patients, labelled with PII spans, document type, fields (values and spans) and route.
+There are two corpora with the same format, layouts, noise and splits, stored separately so they can be compared:
+
+* `data/corpus/`: in-house generator, 6,802 documents from 1,100 patients
+* `data/corpus_synthea/`: Synthea patient histories plus Faker identifiers, 5,105 documents from 1,096 patients
+
+Synthea + Faker is more realistic on most checks: age mix, clinical plausibility, stays and costs, and vocabulary. The in-house corpus is more balanced and safer to publish. See [realism_comparison.md](docs/realism_comparison.md). Each folder also has `real_ocr.jsonl`, 150 golden documents rendered to images and read back with Tesseract.
+
+The in-house corpus splits:
 
 | split | documents | what it is for |
 |---|---|---|
@@ -39,6 +46,7 @@ Splits are by patient, and one layout per document type appears only in `test_ha
 * [Data card](docs/data_card.md): how the corpus is built, record format, limitations
 * [EDA](docs/eda.md): distributions, PII density, routing ambiguity, vocabulary shift, leakage checks
 * [Privacy notes](docs/privacy_notes.md): what is masked, the two-tier rules, why the data is safe to publish
+* [Realism comparison](docs/realism_comparison.md): in-house vs Synthea + Faker against Census and HCUP reference figures
 * [Decision log](docs/decision_log.md): M1 review fixes and M2 changes to the plan (including why Synthea was not used)
 
 ## Quick start
@@ -51,10 +59,13 @@ python3 scripts/eda.py                  # rewrite docs/eda.md and reports/eda_st
 python3 -m unittest -v                  # generator, routing and span tests
 ```
 
-Optional real-scan set (needs `pip install pillow` and Tesseract):
+Synthea + Faker corpus, real-scan OCR sets and the realism report (need the project venv, Java and Tesseract):
 
 ```bash
-python3 scripts/make_scans.py --n 150
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python scripts/generate_synthea_corpus.py      # Synthea run command is in the script docstring
+.venv/bin/python scripts/make_scans.py --n 150 --corpus data/corpus_synthea
+.venv/bin/python scripts/compare_realism.py
 ```
 
 ## Repository layout
@@ -71,9 +82,11 @@ triageguard/
     routing.py         multi-signal routing labels from visible facts
     clean.py           offset-preserving text cleaning
     validate.py        integrity and leakage checks (generation fails on any error)
+    synthea_source.py  episodes from Synthea CSV output, identifiers from Faker
     generate.py        corpus assembly and patient-level splits
-scripts/               generate_corpus.py, eda.py, make_scans.py
-data/corpus/           train / val / test_golden / test_hard JSONL + manifest.json
+scripts/               generate_corpus.py, generate_synthea_corpus.py, eda.py, make_scans.py, compare_realism.py
+data/corpus/           in-house corpus: train / val / test_golden / test_hard JSONL, manifest, real_ocr.jsonl
+data/corpus_synthea/   Synthea + Faker corpus, same layout, plus the Synthea run metadata
 docs/                  M1 PDF, data card, EDA, privacy notes, decision log
 reports/               machine-readable EDA numbers
 tests/                 unit tests

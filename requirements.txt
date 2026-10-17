@@ -1,0 +1,3 @@
+# Only needed for the Synthea+Faker corpus and real-scan OCR set; M1/M2 core is stdlib-only.
+faker==40.43.0
+pillow==13.0.0

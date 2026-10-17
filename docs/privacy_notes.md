@@ -42,3 +42,9 @@ Service dates, amounts, diagnosis and procedure names, and provider organisation
 2. The redactor is scored recall-first. A missed identifier is a leak, so per-label entity recall is reported, plus a strict "any character of the identifier left unmasked" leak count.
 3. On real OCR output, where spans do not align, leakage is measured by searching the redacted text for each original identifier and for its digit sequence.
 4. Reviewer corrections that become training data go through the redactor first.
+
+## The Synthea + Faker corpus
+
+* Synthea patients are simulated, and Synthea SSNs use the never-issued 999 area.
+* Faker phone numbers are in real number ranges, and its emails use real providers (`gmail.com`, `yahoo.com`, `hotmail.com`). A generated `firstname.lastname@gmail.com` or phone number could belong to a real person by chance. The values are not linked to any real person's data, but before this corpus is published more widely, its phones should be moved into the 555 range and its emails onto reserved domains. Its realism comes from the clinical facts, not from these contact details.
+* Synthea addresses use real Massachusetts town names and ZIP codes with invented street names and numbers.

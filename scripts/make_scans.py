@@ -12,7 +12,7 @@ strings; M4 scores PII leakage on this set by searching for each original
 identifier (and its digits) in the redacted OCR text.
 
 Needs: Pillow (pip install pillow) and the tesseract binary on PATH.
-Usage: python3 scripts/make_scans.py [--n 150] [--split test_golden]
+Usage: .venv/bin/python scripts/make_scans.py [--n 150] [--split test_golden] [--corpus data/corpus]
 """
 
 import argparse
@@ -30,10 +30,15 @@ def render_png(text: str, path: Path, rng: random.Random) -> None:
     from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
     lines = text.split("\n")
-    try:
-        font = ImageFont.truetype("Courier New.ttf", 22)
-    except OSError:
-        font = ImageFont.load_default()
+    font = None
+    for cand in ("/System/Library/Fonts/Supplemental/Courier New.ttf", "/System/Library/Fonts/Menlo.ttc",
+                 "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", "Courier New.ttf"):
+        try:
+            font = ImageFont.truetype(cand, 22)
+            break
+        except OSError:
+            continue
+    font = font or ImageFont.load_default(size=22)
     w, h = 1700, 60 + 30 * len(lines)
     img = Image.new("L", (w, h), 255)
     d = ImageDraw.Draw(img)
@@ -53,16 +58,18 @@ def main():
     ap.add_argument("--n", type=int, default=150)
     ap.add_argument("--split", default="test_golden")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--corpus", default="data/corpus")
     a = ap.parse_args()
     if not shutil.which("tesseract"):
         sys.exit("tesseract not found on PATH (macOS: brew install tesseract)")
 
     rng = random.Random(a.seed)
-    docs = [json.loads(l) for l in open(ROOT / "data" / "corpus" / f"{a.split}.jsonl")]
+    corpus = ROOT / a.corpus
+    docs = [json.loads(l) for l in open(corpus / f"{a.split}.jsonl")]
     docs = rng.sample(docs, min(a.n, len(docs)))
-    img_dir = ROOT / "data" / "scans"
+    img_dir = ROOT / "data" / "scans" / corpus.name
     img_dir.mkdir(parents=True, exist_ok=True)
-    out = ROOT / "data" / "corpus" / "real_ocr.jsonl"
+    out = corpus / "real_ocr.jsonl"
     with open(out, "w") as f:
         for d in docs:
             png = img_dir / f"{d['doc_id']}.png"

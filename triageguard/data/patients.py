@@ -75,6 +75,8 @@ class Episode:
     prescription_date: date | None = None
     letter_date: date | None = None
     injected: list = field(default_factory=list)
+    code_system: str = "ICD-10"
+    proc_code_system: str = "CPT"
 
     @property
     def total(self) -> float:

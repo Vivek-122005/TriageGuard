@@ -71,7 +71,7 @@ def claim_form(b: DocBuilder, ep: Episode, layout: int) -> dict:
     dropped = []
     b.fields["diagnosis"] = None
     if layout in (0, 1):
-        b.lit("Diagnosis: ").field("diagnosis", ep.diag_text).lit(f" (ICD-10 {ep.diag_code})\n")
+        b.lit("Diagnosis: ").field("diagnosis", ep.diag_text).lit(f" ({ep.code_system} {ep.diag_code})\n")
         b.fields["diagnosis"] = ep.diag_text
         s["diag_family"] = ep.diag_family
         b.lit("Date of service: ").field("service_date", b.date_(ep.admission)).nl()
@@ -239,13 +239,15 @@ def lab_report(b: DocBuilder, ep: Episode, layout: int) -> dict:
     if layout == 1:
         b.lit("Test                      Result     Units        Reference\n")
     for i, (test, val, unit, lo, hi) in enumerate(ep.labs):
-        flag = " H" if val > hi else ""
+        flag = " H" if hi is not None and val > hi else ""
+        ref = f"{lo}-{hi}" if lo is not None else "n/a"
+        ref_wide = f"{lo} - {hi}" if lo is not None else "n/a"
         if layout == 2:
-            b.lit("- ").field("tests", test, part="name", item=i).lit(" came back at ").field("tests", f"{val}", part="value", item=i).lit(f" {unit} (normal {lo}-{hi}){flag}.\n")
+            b.lit("- ").field("tests", test, part="name", item=i).lit(" came back at ").field("tests", f"{val}", part="value", item=i).lit(f" {unit} (normal {ref}){flag}.\n")
         elif layout == 3:
-            b.field("tests", test, part="name", item=i).lit("=").field("tests", f"{val}", part="value", item=i).lit(f"{unit};ref {lo}-{hi}{flag}\n")
+            b.field("tests", test, part="name", item=i).lit("=").field("tests", f"{val}", part="value", item=i).lit(f"{unit};ref {ref}{flag}\n")
         else:
-            b.field("tests", test, part="name", item=i).lit("   ").field("tests", f"{val}", part="value", item=i).lit(f"   {unit}   {lo} - {hi}{flag}\n")
+            b.field("tests", test, part="name", item=i).lit("   ").field("tests", f"{val}", part="value", item=i).lit(f"   {unit}   {ref_wide}{flag}\n")
         tests.append({"name": test, "value": val, "unit": unit})
     b.lit("\nResults verified by laboratory staff.\n")
     b.fields.update({"tests": tests, "collection_date": ep.collection_date.isoformat()})
@@ -294,7 +296,7 @@ def preauth_letter(b: DocBuilder, ep: Episode, layout: int) -> dict:
         b.lit("Re: ").pii("NAME", b.name(p.first, p.last)).lit(", Member ID ").pii("MEMBER_ID", b.member_id(p.member_id)).lit(", DOB ").pii("DATE_OF_BIRTH", b.date_(p.dob)).nl(2)
         s["dob"] = p.dob
         b.lit("Dear Reviewer,\n\nI am writing to request pre-authorization for ").field("requested_procedure", proc_name)
-        b.lit(f" (CPT {proc_code}) for my patient, who has been diagnosed with ").field("diagnosis", ep.diag_text)
+        b.lit(f" ({ep.proc_code_system} {proc_code}) for my patient, who has been diagnosed with ").field("diagnosis", ep.diag_text)
         b.lit(". Conservative management has not been sufficient. The estimated cost of the procedure is ").field("estimated_cost", b.money(est)).lit(".\n\n")
         b.lit("Please contact my office with any questions.\n\nSincerely,\n").pii("NAME", b.doctor(ep.doctor_first, ep.doctor_last)).nl()
     else:
@@ -330,9 +332,9 @@ def doc_types_for_episode(rng: random.Random, ep: Episode) -> list[str]:
     types = ["claim_form", "hospital_bill"]
     if ep.length_of_stay != 0:
         types.append("discharge_summary")
-    if rng.random() < 0.75:
+    if rng.random() < 0.75 and ep.labs:
         types.append("lab_report")
-    if rng.random() < 0.7:
+    if rng.random() < 0.7 and ep.meds:
         types.append("prescription")
     if rng.random() < 0.45:
         types.append("preauth_letter")

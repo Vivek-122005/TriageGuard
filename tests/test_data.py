@@ -93,5 +93,23 @@ class TextTest(unittest.TestCase):
         self.assertEqual(len(clean_text(t)), len(t))
 
 
+try:
+    import faker  # noqa: F401
+    HAVE_FAKER = True
+except ImportError:
+    HAVE_FAKER = False
+
+
+@unittest.skipUnless(HAVE_FAKER, "Faker is only installed in the project venv")
+class SyntheaHelpersTest(unittest.TestCase):
+    def test_clean_and_parse(self):
+        from triageguard.data.synthea_source import _clean, _lab_range, _parse_med, _strip_digits
+        self.assertEqual(_clean("Chronic kidney disease stage 4 (disorder)"), "Chronic kidney disease stage 4")
+        self.assertEqual(_strip_digits("Gerardo48"), "Gerardo")
+        self.assertEqual(_parse_med("Metformin hydrochloride 500 MG Oral Tablet"), ("Metformin hydrochloride", "500 mg"))
+        self.assertEqual(_lab_range("Sodium [Moles/volume] in Blood"), (135, 145))
+        self.assertEqual(_lab_range("Shrimp IgE Ab [Units/volume] in Serum"), (None, None))
+
+
 if __name__ == "__main__":
     unittest.main()

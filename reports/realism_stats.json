@@ -1,0 +1,216 @@
+{
+  "in-house": {
+    "documents": 6802,
+    "patients": 1100,
+    "episodes": 1542,
+    "age": {
+      "n": 912,
+      "dist": {
+        "0-17": 0.0,
+        "18-64": 0.6370614035087719,
+        "65+": 0.36293859649122806
+      },
+      "median": 56.5,
+      "tv_vs_census": 0.221
+    },
+    "names": {
+      "first_in_us_list": 0.5218317358892439,
+      "last_in_us_list": 0.7625133120340788,
+      "distinct_first_per_100": 7.454739084132055,
+      "distinct_last_per_100": 7.454739084132055,
+      "patients_sharing_full_name": 0.20754716981132076
+    },
+    "plausibility": {
+      "episodes_checked": 1028,
+      "obstetric_episodes": 56,
+      "obstetric_outside_age_12_55": 29,
+      "obstetric_with_male_only_name": 25,
+      "child_episodes": 0,
+      "child_with_adult_only_diagnosis": 0
+    },
+    "hba1c": {
+      "diabetic": {
+        "n": 26,
+        "median": 5.18,
+        "share_ge_6_5": 0.115
+      },
+      "other": {
+        "n": 198,
+        "median": 5.25,
+        "share_ge_6_5": 0.167
+      }
+    },
+    "multimorbidity": {
+      "45-64": 1.41,
+      "65+": 1.43,
+      "<45": 1.41
+    },
+    "stays": {
+      "share_of_episodes_with_stay": 0.432,
+      "n": 666,
+      "los_mean": 6.41,
+      "los_median": 6.0,
+      "cost_median": 30388,
+      "cost_mean": 35116
+    },
+    "diagnoses": {
+      "distinct": 60,
+      "top5_share": 0.114,
+      "evenness": 0.994,
+      "top": [
+        [
+          "uncomplicated vaginal delivery",
+          35
+        ],
+        [
+          "t2dm, controlled",
+          35
+        ],
+        [
+          "major depressive disorder",
+          34
+        ],
+        [
+          "chf exacerbation",
+          32
+        ],
+        [
+          "type 2 diabetes mellitus, uncomplicated",
+          32
+        ],
+        [
+          "copd with acute exacerbation",
+          32
+        ],
+        [
+          "acute non-st elevation myocardial infarction",
+          32
+        ],
+        [
+          "persistent asthma, moderate",
+          31
+        ]
+      ]
+    },
+    "vocabulary": {
+      "distinct_procedures": 26,
+      "distinct_medicines": 21,
+      "distinct_lab_tests": 16,
+      "distinct_providers": 11
+    },
+    "identifiers": {
+      "phones_with_555_prefix": 1.0,
+      "emails_on_reserved_domains": 1.0,
+      "distinct_email_domains": 4,
+      "zip_matches_state": 1.0,
+      "distinct_cities": 18
+    }
+  },
+  "synthea+faker": {
+    "documents": 5105,
+    "patients": 1096,
+    "episodes": 1382,
+    "age": {
+      "n": 853,
+      "dist": {
+        "0-17": 0.182883939038687,
+        "18-64": 0.6447831184056272,
+        "65+": 0.17233294255568582
+      },
+      "median": 44.1,
+      "tv_vs_census": 0.038
+    },
+    "names": {
+      "first_in_us_list": 0.20446927374301677,
+      "last_in_us_list": 0.2111731843575419,
+      "distinct_first_per_100": 89.49720670391062,
+      "distinct_last_per_100": 50.279329608938546,
+      "patients_sharing_full_name": 0.0
+    },
+    "plausibility": {
+      "episodes_checked": 894,
+      "obstetric_episodes": 91,
+      "obstetric_outside_age_12_55": 0,
+      "obstetric_with_male_only_name": 4,
+      "child_episodes": 158,
+      "child_with_adult_only_diagnosis": 1
+    },
+    "hba1c": {
+      "diabetic": {
+        "n": 0,
+        "median": null,
+        "share_ge_6_5": null
+      },
+      "other": {
+        "n": 112,
+        "median": 6.1,
+        "share_ge_6_5": 0.0
+      }
+    },
+    "multimorbidity": {
+      "45-64": 1.31,
+      "65+": 1.35,
+      "<45": 1.27
+    },
+    "stays": {
+      "share_of_episodes_with_stay": 0.025,
+      "n": 35,
+      "los_mean": 5.2,
+      "los_median": 4,
+      "cost_median": 8154,
+      "cost_mean": 11081
+    },
+    "diagnoses": {
+      "distinct": 58,
+      "top5_share": 0.629,
+      "evenness": 0.657,
+      "top": [
+        [
+          "gingivitis",
+          506
+        ],
+        [
+          "normal pregnancy",
+          131
+        ],
+        [
+          "acute bronchitis",
+          82
+        ],
+        [
+          "acute viral pharyngitis",
+          64
+        ],
+        [
+          "dependent drug abuse",
+          54
+        ],
+        [
+          "fracture of bone",
+          45
+        ],
+        [
+          "loss of teeth",
+          42
+        ],
+        [
+          "laceration - injury",
+          32
+        ]
+      ]
+    },
+    "vocabulary": {
+      "distinct_procedures": 148,
+      "distinct_medicines": 106,
+      "distinct_lab_tests": 86,
+      "distinct_providers": 201
+    },
+    "identifiers": {
+      "phones_with_555_prefix": 0.067,
+      "emails_on_reserved_domains": 0.0,
+      "distinct_email_domains": 3,
+      "zip_matches_state": 1.0,
+      "distinct_cities": 258
+    }
+  }
+}

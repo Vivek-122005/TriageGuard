@@ -1,5 +1,7 @@
 # Data card: TriageGuard synthetic claim-document corpus (m2-v1)
 
+> There are two corpora. This card describes the in-house one (`data/corpus/`). The Synthea + Faker corpus (`data/corpus_synthea/`, 1,096 patients, 5,105 documents) uses the same record format, layouts, noise and splits. Only its facts come from Synthea and its contact identifiers from Faker. See [realism_comparison.md](realism_comparison.md) for how the two differ and which is more realistic.
+
 ## Summary
 
 | | |
@@ -81,4 +83,4 @@ Training and evaluating the TriageGuard stages: PII redaction (token NER), docum
 * **Clinical realism is shallow.** Diagnosis-procedure compatibility is by broad family, and lab values are drawn independently of the diagnosis.
 * **Names** come from a fixed list of 70 first names and 70 surnames from several cultures. A model may overfit to them, so M3 should also test on unseen names.
 * **OCR.** The built-in OCR noise is simulated. Real scan errors (merged words, lost lines, wrong reading order) are only covered once `scripts/make_scans.py` has been run with Tesseract installed.
-* **Synthea was not used** (a change from the M1 plan, see [decision_log.md](decision_log.md)). Patient histories are simpler than Synthea's as a result.
+* **Clinical realism is low compared with the Synthea corpus.** Diagnoses ignore age and sex (for example deliveries at age 70), there are no children, and lab values ignore the diagnosis. See [realism_comparison.md](realism_comparison.md).

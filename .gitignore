@@ -7,3 +7,5 @@ venv/
 mlruns/
 # Rendered scan images are large and reproducible from scripts/make_scans.py
 data/scans/
+# Downloaded tools and their raw output (Synthea jar ~200 MB, CSV ~560 MB); see scripts/generate_synthea_corpus.py
+tools/

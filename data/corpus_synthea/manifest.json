@@ -1,0 +1,26 @@
+{
+  "corpus_version": "m2-synthea-v1",
+  "seed": 13,
+  "n_patients": 1096,
+  "n_documents": 5105,
+  "documents_per_split": {
+    "train": 3582,
+    "test_golden": 521,
+    "test_hard": 506,
+    "val": 496
+  },
+  "patients_per_split": {
+    "train": 767,
+    "test_golden": 110,
+    "test_hard": 109,
+    "val": 110
+  },
+  "signal_rates": {
+    "procedure_mismatch": 0.07,
+    "duplicate_billing": 0.06,
+    "impossible_dates": 0.05,
+    "ambiguous_amount": 0.22
+  },
+  "ocr_share_in_hard": 0.4,
+  "source": "Synthea (CSV export) + Faker en_US"
+}

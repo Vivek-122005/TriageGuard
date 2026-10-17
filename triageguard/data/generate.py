@@ -95,7 +95,7 @@ def generate(n_patients: int = 1100, seed: int = 13) -> list[dict]:
     return docs
 
 
-def write_corpus(docs: list[dict], out_dir: Path, seed: int, n_patients: int) -> dict:
+def write_corpus(docs: list[dict], out_dir: Path, seed: int, n_patients: int, extra: dict | None = None) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     by_split: dict[str, list[dict]] = {}
     for d in docs:
@@ -114,6 +114,7 @@ def write_corpus(docs: list[dict], out_dir: Path, seed: int, n_patients: int) ->
         "signal_rates": SIGNAL_RATES,
         "ocr_share_in_hard": OCR_SHARE_HARD,
     }
+    manifest.update(extra or {})
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest
 
@@ -124,3 +125,23 @@ def main(out_dir: str = "data/corpus", n_patients: int = 1100, seed: int = 13) -
     if problems:
         raise SystemExit("corpus failed validation:\n" + "\n".join(problems[:20]))
     return write_corpus(docs, Path(out_dir), seed, n_patients)
+
+
+def generate_synthea(csv_dir: str, out_dir: str = "data/corpus_synthea", seed: int = 13) -> dict:
+    """Same documents, layouts, noise and splits, but facts from Synthea + Faker."""
+    from .synthea_source import SyntheaSource
+
+    src = SyntheaSource(csv_dir, seed)
+    rng = random.Random(seed)
+    patient_eps = list(src.episodes(SIGNAL_RATES))
+    splits = _assign_splits(rng, len(patient_eps))
+    docs = []
+    for (_patient, eps), split in zip(patient_eps, splits):
+        for ep in eps:
+            for doc_type in doc_types_for_episode(rng, ep):
+                docs.append(build_document(rng, ep, doc_type, split, f"S{len(docs):06d}"))
+    problems = validate_corpus(docs)
+    if problems:
+        raise SystemExit("corpus failed validation:\n" + "\n".join(problems[:20]))
+    return write_corpus(docs, Path(out_dir), seed, len(patient_eps),
+                        {"corpus_version": "m2-synthea-v1", "source": "Synthea (CSV export) + Faker en_US"})
