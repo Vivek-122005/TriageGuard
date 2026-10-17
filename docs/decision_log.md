@@ -61,3 +61,4 @@ Those benchmarks use free clinical narrative, which is harder than our mostly st
 | Reference ranges added for the 30 most common Synthea lab tests | Real lab reports always print a range | Lab reports |
 | Real Tesseract OCR sets (150 golden docs per corpus) | Tesseract and Pillow are now installed in `.venv` | `real_ocr.jsonl` in each corpus folder; scan images are not committed |
 | Raw Synthea output and jar are not committed (`tools/` is ignored) | About 760 MB. The run is reproducible with the command in `scripts/generate_synthea_corpus.py` plus `-r 20261017` to fix Synthea's reference date | Repository size |
+| **Synthea + Faker is the main dataset from M3 on; the in-house corpus stays as a control set** (decided by the project owner, 2026-10-17) | It won the realism comparison on demographics, clinical plausibility, stays, costs and vocabulary | All modelling; rebalancing planned before M3 (see [PLAN.md](PLAN.md)) |

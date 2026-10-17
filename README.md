@@ -12,13 +12,15 @@ The core idea is to never leak an identifier (PII recall comes first) and to aut
 
 The full problem definition and business case is in [docs/M1_Problem_Definition_and_Business_Case.pdf](docs/M1_Problem_Definition_and_Business_Case.pdf).
 
+**Start here:** [Architecture](docs/ARCHITECTURE.md) covers how the system and data pipeline fit together. The [plan and history](docs/PLAN.md) covers what each phase did, what was redone and why, and what comes next.
+
 ## Status
 
 | Milestone | Deliverable | State |
 |---|---|---|
 | M1 Problem definition | Problem brief, users, KPIs, feasibility, repository | Done. Gaps found in review are settled in [decision_log.md](docs/decision_log.md) |
-| M2 Data preparation | Synthetic corpus, data card, EDA, cleaning, splits, privacy notes | Done |
-| M3 Baselines and models | Rule and TF-IDF baselines, fine-tuned candidates, experiment log | Next |
+| M2 Data preparation | Synthetic corpora, data card, EDA, cleaning, splits, privacy notes, realism comparison | Done. Main dataset is Synthea + Faker |
+| M3 Baselines and models | Rule and TF-IDF baselines, fine-tuned candidates, experiment log | Next (pre-M3 items in [PLAN.md](docs/PLAN.md#before-m3-open-items)) |
 | M4 Evaluation | Error analysis, OCR robustness, threshold choice | Planned |
 | M5 Deployment prototype | FastAPI service, Docker, monitoring, fallbacks | Planned |
 | M6 Final delivery | Report, live demo, presentation | Planned |
@@ -27,27 +29,32 @@ The full problem definition and business case is in [docs/M1_Problem_Definition_
 
 There are two corpora with the same format, layouts, noise and splits, stored separately so they can be compared:
 
-* `data/corpus/`: in-house generator, 6,802 documents from 1,100 patients
-* `data/corpus_synthea/`: Synthea patient histories plus Faker identifiers, 5,105 documents from 1,096 patients
+| corpus | source | documents | role |
+|---|---|---|---|
+| `data/corpus_synthea/` | Synthea patient histories + Faker identifiers | 5,105 from 1,096 patients | **Main dataset** |
+| `data/corpus/` | In-house generator | 6,802 from 1,100 patients | Balanced, privacy-safe control set |
 
-Synthea + Faker is more realistic on most checks: age mix, clinical plausibility, stays and costs, and vocabulary. The in-house corpus is more balanced and safer to publish. See [realism_comparison.md](docs/realism_comparison.md). Each folder also has `real_ocr.jsonl`, 150 golden documents rendered to images and read back with Tesseract.
+Synthea + Faker won the [realism comparison](docs/realism_comparison.md) on age mix, clinical plausibility, stays and costs, and vocabulary. It still needs rebalancing before M3, because it has very few discharge summaries and high-value documents (see [PLAN.md](docs/PLAN.md)).
 
-The in-house corpus splits:
+Each corpus has four splits plus a real-scan set:
 
-| split | documents | what it is for |
-|---|---|---|
-| `train` | 4,689 | training |
-| `val` | 709 | tuning, choosing confidence thresholds |
-| `test_golden` | 682 | frozen final score, never tuned on |
-| `test_hard` | 722 | held-out layouts, heavy noise, OCR-style text |
+| split | Synthea + Faker | in-house | what it is for |
+|---|---|---|---|
+| `train` | 3,582 | 4,689 | training |
+| `val` | 496 | 709 | tuning, choosing confidence thresholds |
+| `test_golden` | 521 | 682 | frozen final score, never tuned on |
+| `test_hard` | 506 | 722 | held-out layouts, heavy noise, OCR-style text |
+| `real_ocr` | 150 | 150 | golden docs rendered to images and read back with Tesseract |
 
 Splits are by patient, and one layout per document type appears only in `test_hard`. More detail:
 
+* [Architecture](docs/ARCHITECTURE.md): runtime pipeline, privacy boundary, data pipeline, code map
+* [Plan and history](docs/PLAN.md): phase-by-phase record, redone steps, pre-M3 checklist
 * [Data card](docs/data_card.md): how the corpus is built, record format, limitations
 * [EDA](docs/eda.md): distributions, PII density, routing ambiguity, vocabulary shift, leakage checks
 * [Privacy notes](docs/privacy_notes.md): what is masked, the two-tier rules, why the data is safe to publish
 * [Realism comparison](docs/realism_comparison.md): in-house vs Synthea + Faker against Census and HCUP reference figures
-* [Decision log](docs/decision_log.md): M1 review fixes and M2 changes to the plan (including why Synthea was not used)
+* [Decision log](docs/decision_log.md): M1 review fixes and every M2 change to the plan, including the switch to Synthea + Faker
 
 ## Quick start
 
