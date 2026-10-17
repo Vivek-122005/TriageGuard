@@ -1,0 +1,25 @@
+{
+  "corpus_version": "m2-v1",
+  "seed": 13,
+  "n_patients": 1100,
+  "n_documents": 6802,
+  "documents_per_split": {
+    "train": 4689,
+    "test_golden": 682,
+    "test_hard": 722,
+    "val": 709
+  },
+  "patients_per_split": {
+    "train": 770,
+    "test_golden": 110,
+    "test_hard": 110,
+    "val": 110
+  },
+  "signal_rates": {
+    "procedure_mismatch": 0.07,
+    "duplicate_billing": 0.06,
+    "impossible_dates": 0.05,
+    "ambiguous_amount": 0.22
+  },
+  "ocr_share_in_hard": 0.4
+}

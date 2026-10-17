@@ -1,0 +1,70 @@
+{
+  "split_sizes": {
+    "train": 4689,
+    "val": 709,
+    "test_golden": 682,
+    "test_hard": 722
+  },
+  "type_counts": {
+    "claim_form": 1542,
+    "hospital_bill": 1542,
+    "lab_report": 1172,
+    "prescription": 1077,
+    "discharge_summary": 807,
+    "preauth_letter": 662
+  },
+  "routes": {
+    "train": {
+      "routine": 3310,
+      "high_value": 957,
+      "suspicious": 422
+    },
+    "val": {
+      "routine": 496,
+      "suspicious": 87,
+      "high_value": 126
+    },
+    "test_golden": {
+      "high_value": 97,
+      "routine": 514,
+      "suspicious": 71
+    },
+    "test_hard": {
+      "routine": 523,
+      "suspicious": 58,
+      "high_value": 141
+    }
+  },
+  "signals": {
+    "duplicate_billing": 194,
+    "procedure_mismatch": 250,
+    "impossible_dates": 213
+  },
+  "amounts": {
+    "min": 63.89,
+    "median": 18333.12,
+    "p95": 60105.89,
+    "max": 146957.13,
+    "mean": 20799.4
+  },
+  "ambiguous_band": {
+    "n": 371,
+    "high_value": 193
+  },
+  "pii_labels": {
+    "NAME": 12726,
+    "DATE_OF_BIRTH": 6802,
+    "ADDRESS": 4051,
+    "MEMBER_ID": 6461,
+    "ACCOUNT_NUMBER": 2141,
+    "SSN": 2772,
+    "PHONE": 6058,
+    "MRN": 3005,
+    "EMAIL": 2133
+  },
+  "leakage": {
+    "patient_overlap": 0,
+    "cross_split_duplicate_texts": 0,
+    "held_out_leak": 0
+  }
+}
