@@ -3,7 +3,8 @@
 Writes docs/eda.md (readable report) and reports/eda_stats.json (raw numbers).
 Standard library only, so it runs anywhere the generator runs.
 
-Usage: python3 scripts/eda.py [--corpus data/corpus]
+Usage: python3 scripts/eda.py [--corpus data/corpus] [--out eda]
+       python3 scripts/eda.py --corpus data/corpus_synthea --out eda_synthea
 """
 
 import argparse
@@ -42,7 +43,7 @@ def table(header, rows):
     return "\n".join(out)
 
 
-def main(corpus: Path):
+def main(corpus: Path, out_name: str = "eda"):
     data = load(corpus)
     alld = [d for s in SPLITS for d in data[s]]
     stats = {}
@@ -71,9 +72,11 @@ def main(corpus: Path):
     rows = []
     for t in DOC_TYPES:
         rows.append([t] + [sum(d["doc_type"] == t for d in data[s]) for s in SPLITS] + [pct(sum(d["doc_type"] == t for d in alld), len(alld))])
+    tc = Counter(d["doc_type"] for d in alld)
+    smallest = min(tc, key=tc.get)
     md += [table(["type"] + SPLITS + ["share"], rows), "",
            "Claim forms and bills are the largest classes because every episode produces both; "
-           "pre-authorization letters are the smallest. Macro-F1 (the M1 target metric) weights them equally.", ""]
+           f"{smallest.replace('_', ' ')} is the smallest ({tc[smallest]} documents). Macro-F1 (the M1 target metric) weights them equally.", ""]
     stats["type_counts"] = dict(Counter(d["doc_type"] for d in alld))
 
     # 3. Routes
@@ -123,7 +126,8 @@ def main(corpus: Path):
         q = quantiles([len(d["text"].split()) for d in alld if d["doc_type"] == t])
         rows.append([t, q["min"], q["median"], q["mean"], q["p95"], q["max"]])
     md += [table(["type", "min", "median", "mean", "p95", "max"], rows), "",
-           "Every document fits comfortably inside a 512-token transformer window, so M3 does not need chunking.", ""]
+           f"The longest document has {max(len(d['text'].split()) for d in alld)} whitespace tokens. Subword tokenizers produce "
+           "more pieces than that (often 1.5-2x), so M3 must check documents against a 512-token window and chunk any that overflow.", ""]
 
     # 6. PII
     md += ["## 6. PII spans", ""]
@@ -135,7 +139,8 @@ def main(corpus: Path):
            f"- {sum(lab.values())} PII spans in total, {per_doc['median']} per document (median), max {per_doc['max']}.",
            f"- PII covers {pct(pii_chars, all_chars)} of all characters, so a token classifier sees mostly negative tokens; "
            "M3 should report entity-level recall per label, not token accuracy.",
-           f"- Rare labels (ACCOUNT_NUMBER, EMAIL) are where recall will be weakest; the rule baseline covers them with patterns.", ""]
+           f"- The rarest labels ({', '.join(l for l, _ in sorted(lab.items(), key=lambda kv: kv[1])[:2])}) are where recall will be weakest; "
+           "the rule baseline covers them with patterns.", ""]
     stats["pii_labels"] = dict(lab)
     surfaces = defaultdict(set)
     for d in alld:
@@ -193,13 +198,15 @@ def main(corpus: Path):
            "All four must be 0; `triageguard/data/validate.py` fails generation otherwise.", ""]
     stats["leakage"] = {"patient_overlap": overlap, "cross_split_duplicate_texts": dup_cross, "held_out_leak": held_leak}
 
-    (ROOT / "docs" / "eda.md").write_text("\n".join(md))
+    (ROOT / "docs" / f"{out_name}.md").write_text("\n".join(md))
     (ROOT / "reports").mkdir(exist_ok=True)
-    (ROOT / "reports" / "eda_stats.json").write_text(json.dumps(stats, indent=2, default=str) + "\n")
+    (ROOT / "reports" / f"{out_name}_stats.json").write_text(json.dumps(stats, indent=2, default=str) + "\n")
     print("\n".join(md))
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", default=str(ROOT / "data" / "corpus"))
-    main(Path(ap.parse_args().corpus))
+    ap.add_argument("--out", default="eda", help="report name: docs/<out>.md and reports/<out>_stats.json")
+    a = ap.parse_args()
+    main(Path(a.corpus), a.out)

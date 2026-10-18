@@ -9,8 +9,8 @@ This is the running record of the project: what each phase is for, what was done
 | Phase | Goal | Status |
 |---|---|---|
 | M1 Problem definition | Problem, users, KPIs, feasibility, repo | Done (2026-10-17), with review fixes |
-| M2 Data preparation | Corpus, data card, EDA, splits, privacy notes | Done (2026-10-17); main dataset switched to Synthea + Faker |
-| M3 Baselines and models | Baselines for every stage, stronger candidates, experiment log | Next, waiting on the pre-M3 items below |
+| M2 Data preparation | Corpus, data card, EDA, splits, privacy notes | Done; main dataset is Synthea + Faker v2 (rebalanced 2026-10-18) |
+| M3 Baselines and models | Baselines for every stage, stronger candidates, experiment log | Next: evaluation harness, then baselines |
 | M4 Evaluation and optimisation | Error analysis, OCR robustness, thresholds, calibration | Planned |
 | M5 Deployment prototype | FastAPI + Docker, monitoring, fallbacks | Planned |
 | M6 Final delivery | Report, live demo, presentation, viva | Planned |
@@ -77,27 +77,31 @@ This is the running record of the project: what each phase is for, what was done
 - Synthea + Faker is more realistic on age mix, clinical plausibility, stays and costs, vocabulary and identifier formats. The in-house corpus wins on common names, geographic spread, class balance and publishing safety.
 - **Decision (2026-10-17, project owner):** Synthea + Faker becomes the main dataset. The in-house corpus stays as a control set and for cross-source transfer tests.
 
-### Known weaknesses of the main dataset (to fix before M3)
+### Step 6: rebalancing the main dataset (done, 2026-10-18)
 
-| Weakness | Numbers | Planned fix |
-|---|---|---|
-| Too few discharge summaries | 30 train, 4 val, 3 golden, 5 hard | Oversample inpatient encounters |
-| Too few high-value documents | 244 train, 38 golden | Same: inpatient stays carry the large amounts |
-| One diagnosis dominates | Gingivitis is 37% of episodes | Cap any diagnosis at about 10% of episodes |
-| Generator-style surnames | 21% of surnames are common US surnames | Swap in Faker `en_US` names |
-| Faker contact details look real | Real-range phones, gmail and yahoo emails | Move to 555 and reserved domains before publishing |
-| Only Massachusetts addresses | 1 state | Accept, or run Synthea for 2-3 more states |
+- **Changed because:** in v1 the golden test set had 3 discharge summaries and 38 high-value documents, and gingivitis was 37% of episodes. No score on those classes would have meant anything. The project owner approved the fix.
+- **Redone:**
+  - Synthea was re-run with 3,000 living patients (3,474 in total) and a pinned reference date (`-r 20261017`), so it can be reproduced.
+  - Sampling now gives 40% of the 1,100 places to patients who had a hospital stay, and caps every diagnosis at about 10% of episodes (`SyntheaSource.select`).
+  - Inpatient encounters may have a "situation" reason (for example "Awaiting transplantation of kidney").
+  - Synthea's generator-style names were replaced by Faker `en_US` names matched to sex. Phones moved into the fictional 555-01xx block, and emails onto reserved domains.
+- **Result:** `m2-synthea-v2`, 5,591 docs from 1,100 patients. Discharge summaries went from 42 to 470, the top diagnosis from 37% to about 11%, and distinct diagnoses from 58 to 75. Realism re-checked in [realism_comparison.md](realism_comparison.md). Stays are now deliberately over-represented (28% of episodes).
+- **Still weak:** high-value documents (39 in golden, 376 in train) because Synthea stays are cheap next to the $25,000 line. Accepted for now; a 39-document recall has a wide margin of error, and M4 should report it with a confidence interval.
+
+### Step 7: test sets frozen (done, 2026-10-18)
+
+- `scripts/freeze_golden.py` stores SHA-256 hashes of every golden, hard and real-OCR file in `data/FROZEN_TEST_SETS.json`. `tests/test_frozen.py` fails if any of them changes without a new freeze. Any future re-freeze must be logged here.
 
 ## Before M3: open items
 
 | # | Item | Why it matters | Needs the owner's go-ahead? |
 |---|---|---|---|
-| 1 | Rebalance the Synthea corpus (table above) and regenerate | With 3 golden discharge summaries, macro-F1 and routing recall are meaningless | Yes, it changes the dataset |
-| 2 | Pin the Synthea run (`-r 20261017`, keep the jar version) | Synthea dates depend on the run day, so runs aren't reproducible otherwise | No |
-| 3 | Freeze the golden sets (store file hashes) | Proves we never tuned on them (M1 section 7.3) | No |
+| 1 | ~~Rebalance the Synthea corpus~~ | Done (step 6) | |
+| 2 | ~~Pin the Synthea run~~ | Done (step 6) | |
+| 3 | ~~Freeze the test sets~~ | Done (step 7) | |
 | 4 | Write the evaluation harness before any model | Metrics are defined once, as settled in M1 review | No |
-| 5 | Install M3 libraries in `.venv` (scikit-learn, PyTorch, Transformers, MLflow) | PyTorch support for Python 3.14 needs checking; fall back to 3.12 if missing | Yes (installs) |
-| 6 | Decide on GPU use (local CPU vs Colab/Kaggle) for fine-tuning | A small encoder is fine on CPU for 5k short docs, but slower | Yes |
+| 5 | Install M3 libraries in `.venv` (scikit-learn first; PyTorch, Transformers, MLflow for fine-tuning) | PyTorch support for Python 3.14 needs checking; fall back to 3.12 if missing | Yes (installs) |
+| 6 | GPU for fine-tuning: Lightning AI over SSH | The owner has Lightning credits. They run Lightning's SSH setup on the Mac themselves and share only the host name, never a key. Baselines run locally on CPU. | Owner sets up SSH |
 | 7 | Small real-text sanity check (M1 section 8.5) | Shows how far synthetic scores are from reality | Later (M4) |
 | 8 | Fill in the name on the M1 PDF | Submission | Owner |
 
@@ -127,3 +131,4 @@ Every model is trained on Synthea + Faker train data and scored on golden, hard 
 | 2026-10-17 | Repo created; M2 in-house corpus, EDA, data card, privacy notes, decision log |
 | 2026-10-17 | Synthea + Faker corpus, real Tesseract OCR sets, realism comparison |
 | 2026-10-17 | Synthea + Faker chosen as main dataset; ARCHITECTURE.md and PLAN.md added |
+| 2026-10-18 | Synthea re-run (pinned), main dataset rebalanced to v2, names and contacts fixed, test sets frozen, EDA for both corpora |

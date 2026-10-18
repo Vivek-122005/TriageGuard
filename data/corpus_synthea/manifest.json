@@ -1,18 +1,18 @@
 {
-  "corpus_version": "m2-synthea-v1",
+  "corpus_version": "m2-synthea-v2",
   "seed": 13,
-  "n_patients": 1096,
-  "n_documents": 5105,
+  "n_patients": 1100,
+  "n_documents": 5591,
   "documents_per_split": {
-    "train": 3582,
-    "test_golden": 521,
-    "test_hard": 506,
-    "val": 496
+    "train": 3940,
+    "test_golden": 504,
+    "test_hard": 561,
+    "val": 586
   },
   "patients_per_split": {
-    "train": 767,
+    "train": 770,
     "test_golden": 110,
-    "test_hard": 109,
+    "test_hard": 110,
     "val": 110
   },
   "signal_rates": {
@@ -22,5 +22,10 @@
     "ambiguous_amount": 0.22
   },
   "ocr_share_in_hard": 0.4,
-  "source": "Synthea (CSV export) + Faker en_US"
+  "source": "Synthea d9d07a6 (CSV, -p 3000 -s 13 -r 20261017) + Faker en_US",
+  "selection": {
+    "n_patients": 1100,
+    "stay_share": 0.4,
+    "max_reason_share": 0.1
+  }
 }

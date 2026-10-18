@@ -46,5 +46,6 @@ Service dates, amounts, diagnosis and procedure names, and provider organisation
 ## The Synthea + Faker corpus
 
 * Synthea patients are simulated, and Synthea SSNs use the never-issued 999 area.
-* Faker phone numbers are in real number ranges, and its emails use real providers (`gmail.com`, `yahoo.com`, `hotmail.com`). A generated `firstname.lastname@gmail.com` or phone number could belong to a real person by chance. The values are not linked to any real person's data, but before this corpus is published more widely, its phones should be moved into the 555 range and its emails onto reserved domains. Its realism comes from the clinical facts, not from these contact details.
+* Names come from Faker's `en_US` lists, combined at random.
+* Phones use a real-looking area code but always the fictional 555-0100 to 555-0199 block. Emails use reserved domains (`example.com/.org/.net`, `.test`). v1 used real-looking phones and `gmail.com`/`yahoo.com` emails; v2 replaced them so the corpus is safe to publish.
 * Synthea addresses use real Massachusetts town names and ZIP codes with invented street names and numbers.

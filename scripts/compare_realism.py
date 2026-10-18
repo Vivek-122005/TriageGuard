@@ -220,7 +220,8 @@ def analyse(docs: list[dict]) -> dict:
         m = re.search(r"\b([A-Z]{2}) (\d{5})$", a)
         zip_ok += bool(m and m.group(1) in ZIP_REGION[m.group(2)[0]].split())
     out["identifiers"] = {
-        "phones_with_555_prefix": round(sum(p.startswith("555") for p in phones) / len(phones), 3),
+        # Fictional numbers: 555 as area code (in-house) or the reserved 555-0100..0199 block.
+        "phones_fictional": round(sum(p.startswith("555") or p[3:8] == "55501" for p in phones) / len(phones), 3),
         "emails_on_reserved_domains": round(sum(e.endswith((".test", "example.com", "example.org", "example.net")) for e in emails) / len(emails), 3),
         "distinct_email_domains": len(set(emails)),
         "zip_matches_state": round(zip_ok / len(addrs), 3),

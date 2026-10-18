@@ -26,7 +26,7 @@ from __future__ import annotations
 import csv
 import random
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -39,6 +39,7 @@ CLASSES = {"inpatient", "emergency", "outpatient", "ambulatory", "urgentcare"}
 _SUFFIX = re.compile(r"\s*\((disorder|procedure|finding|situation|regime/therapy)\)\s*$")
 _STRENGTH = re.compile(r"\s(\d[\d.]*\s*(?:MG|MCG|ML|UNT|MG/ML|MG/MG|%)\S*(?:\s*/\s*\S+)?)", re.I)
 STATE_ABBR = {"Massachusetts": "MA"}
+SAFE_EMAIL_DOMAINS = ["example.com", "example.org", "example.net", "mail.test"]
 
 # Typical adult reference ranges for the most common Synthea lab results,
 # keyed by the start of the LOINC display name. Real lab reports always print
@@ -122,8 +123,9 @@ class SyntheaSource:
         self.candidates = defaultdict(list)
         for e in self.encounters.values():
             reason = e["REASONDESCRIPTION"]
-            if (e["ENCOUNTERCLASS"] in CLASSES and self.procs.get(e["Id"])
-                    and reason.endswith(("(disorder)", "(finding)"))):
+            ok_reason = reason.endswith(("(disorder)", "(finding)")) or (
+                e["ENCOUNTERCLASS"] == "inpatient" and reason.endswith("(situation)"))
+            if e["ENCOUNTERCLASS"] in CLASSES and self.procs.get(e["Id"]) and ok_reason:
                 self.candidates[e["PATIENT"]].append(e)
         # Pool for procedure-mismatch injection: (procedure row, its encounter reason).
         self.proc_pool = [(p, e["REASONDESCRIPTION"]) for pid in self.candidates
@@ -132,7 +134,10 @@ class SyntheaSource:
     # ------------------------------------------------------------- patients
     def make_patient(self, row: dict, idx: int) -> Patient:
         f, rng = self.fake, self.rng
-        first, last = _strip_digits(row["FIRST"]), _strip_digits(row["LAST"])
+        # Synthea's own names are generator-style ("Lebsack", "O'Kon"), so
+        # names come from Faker's census-based en_US lists, matched to sex.
+        first = f.first_name_female() if row["GENDER"] == "F" else f.first_name_male()
+        last = f.last_name()
         handle = f"{first}.{last}".lower().replace(" ", "").replace("'", "")
         rel_first, rel_last = f.first_name(), last if rng.random() < 0.7 else f.last_name()
         return Patient(
@@ -141,8 +146,8 @@ class SyntheaSource:
             last=last,
             dob=date.fromisoformat(row["BIRTHDATE"]),
             ssn=row["SSN"],  # Synthea uses the never-issued 999 area.
-            phone=re.sub(r"\D", "", f.basic_phone_number())[-10:],
-            email=f"{handle}{rng.choice(['', str(rng.randint(1, 99))])}@{f.free_email_domain()}",
+            phone=self._phone(),
+            email=f"{handle}{rng.choice(['', str(rng.randint(1, 99))])}@{rng.choice(SAFE_EMAIL_DOMAINS)}",
             street=row["ADDRESS"],
             city=row["CITY"],
             state=STATE_ABBR.get(row["STATE"], row["STATE"]),
@@ -153,8 +158,13 @@ class SyntheaSource:
             relative_first=rel_first,
             relative_last=rel_last,
             relative_relation=rng.choice(["spouse", "daughter", "son", "mother", "father", "sister", "brother"]),
-            relative_phone=re.sub(r"\D", "", f.basic_phone_number())[-10:],
+            relative_phone=self._phone(),
         )
+
+    def _phone(self) -> str:
+        """Real-looking area code, but always in the fictional 555-0100..0199 block."""
+        area = re.sub(r"\D", "", self.fake.basic_phone_number())[-10:][:3]
+        return f"{area}5550{self.rng.randint(100, 199)}"
 
     # ------------------------------------------------------------- episodes
     def _labs(self, enc: dict, pid: str) -> list:
@@ -273,19 +283,59 @@ class SyntheaSource:
             proc_code_system="SNOMED CT",
         )
 
-    def episodes(self, rates: dict):
-        """Yield (patient, [episodes]) for every Synthea patient with a candidate encounter."""
+    def select(self, n_patients: int, stay_share: float, max_reason_share: float) -> list[tuple[str, list[dict]]]:
+        """Pick patients and encounters so every document type and route is learnable.
+
+        Raw Synthea is realistic but lopsided for training: about 2% of
+        episodes are hospital stays and one condition (gingivitis) is over a
+        third of all episodes. We (1) give patients who had a stay a
+        `stay_share` of the places, with a stay as their first episode, and
+        (2) cap every diagnosis at `max_reason_share` of all episodes. Within
+        those limits the choice is random, so Synthea's clinical facts are
+        untouched; only the sampling changes.
+        """
+        rng = self.rng
+        with_stay = sorted(p for p, es in self.candidates.items() if any(e["ENCOUNTERCLASS"] == "inpatient" for e in es))
+        stay_set = set(with_stay)
+        without = sorted(p for p in self.candidates if p not in stay_set)
+        n_stay = min(len(with_stay), round(n_patients * stay_share))
+        rng.shuffle(with_stay)
+        rng.shuffle(without)
+
+        counts, total = Counter(), 0
+        out, stays_taken = [], 0
+        # Stay patients first until their quota is met, then everyone else.
+        for pid in with_stay[:n_stay] + without + with_stay[n_stay:]:
+            if len(out) == n_patients:
+                break
+            encs = rng.sample(self.candidates[pid], len(self.candidates[pid]))
+            encs.sort(key=lambda e: e["ENCOUNTERCLASS"] != "inpatient")  # stays first, stable otherwise
+            want = rng.choices([1, 2, 3], weights=[0.65, 0.28, 0.07])[0]
+            picked, reasons = [], set()
+            for e in encs:
+                r = e["REASONDESCRIPTION"]
+                # Running cap: a diagnosis may never exceed max_reason_share of
+                # the episodes picked so far (with a small warm-up allowance).
+                if r in reasons or counts[r] + 1 > max_reason_share * (total + 1) + 10:
+                    continue
+                picked.append(e)
+                reasons.add(r)
+                counts[r] += 1
+                total += 1
+                if len(picked) == want:
+                    break
+            if picked:
+                out.append((pid, picked))
+        rng.shuffle(out)
+        return out
+
+    def episodes(self, rates: dict, n_patients: int = 1100, stay_share: float = 0.4, max_reason_share: float = 0.10):
+        """Yield (patient, [episodes]) for the selected Synthea patients."""
         ep_idx = 0
-        ids = sorted(self.candidates)
-        for i, pid in enumerate(ids):
+        for i, (pid, encs) in enumerate(self.select(n_patients, stay_share, max_reason_share)):
             patient = self.make_patient(self.patients[pid], i)
-            by_reason = {}
-            for e in self.rng.sample(self.candidates[pid], len(self.candidates[pid])):
-                by_reason.setdefault(e["REASONDESCRIPTION"], e)
-            encs = list(by_reason.values())[: self.rng.choices([1, 2, 3], weights=[0.65, 0.28, 0.07])[0]]
             eps = []
             for e in encs:
                 eps.append(self.make_episode(patient, pid, e, ep_idx, rates))
                 ep_idx += 1
             yield patient, eps
-

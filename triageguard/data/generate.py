@@ -144,4 +144,5 @@ def generate_synthea(csv_dir: str, out_dir: str = "data/corpus_synthea", seed: i
     if problems:
         raise SystemExit("corpus failed validation:\n" + "\n".join(problems[:20]))
     return write_corpus(docs, Path(out_dir), seed, len(patient_eps),
-                        {"corpus_version": "m2-synthea-v1", "source": "Synthea (CSV export) + Faker en_US"})
+                        {"corpus_version": "m2-synthea-v2", "source": "Synthea d9d07a6 (CSV, -p 3000 -s 13 -r 20261017) + Faker en_US",
+                         "selection": {"n_patients": 1100, "stay_share": 0.4, "max_reason_share": 0.10}})

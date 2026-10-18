@@ -1,6 +1,6 @@
 # Data card: TriageGuard synthetic claim-document corpus (m2-v1)
 
-> There are two corpora. This card describes the in-house one (`data/corpus/`). The Synthea + Faker corpus (`data/corpus_synthea/`, 1,096 patients, 5,105 documents) uses the same record format, layouts, noise and splits. Only its facts come from Synthea and its contact identifiers from Faker. See [realism_comparison.md](realism_comparison.md) for how the two differ and which is more realistic.
+> There are two corpora. This card describes the in-house one (`data/corpus/`). The Synthea + Faker corpus (`data/corpus_synthea/`, the **main dataset**, version `m2-synthea-v2`: 1,100 patients, 5,591 documents) uses the same record format, layouts, noise and splits. Its clinical facts come from Synthea, and its names and contact identifiers from Faker. Its patients are sampled so that 40% had a hospital stay and no diagnosis exceeds about 10% of episodes. Its own statistics are in [eda_synthea.md](eda_synthea.md). See [realism_comparison.md](realism_comparison.md) for how the two differ and which is more realistic.
 
 ## Summary
 

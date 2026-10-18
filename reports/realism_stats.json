@@ -99,7 +99,7 @@
       "distinct_providers": 11
     },
     "identifiers": {
-      "phones_with_555_prefix": 1.0,
+      "phones_fictional": 1.0,
       "emails_on_reserved_domains": 1.0,
       "distinct_email_domains": 4,
       "zip_matches_state": 1.0,
@@ -107,32 +107,32 @@
     }
   },
   "synthea+faker": {
-    "documents": 5105,
-    "patients": 1096,
-    "episodes": 1382,
+    "documents": 5591,
+    "patients": 1100,
+    "episodes": 1398,
     "age": {
-      "n": 853,
+      "n": 896,
       "dist": {
-        "0-17": 0.182883939038687,
-        "18-64": 0.6447831184056272,
-        "65+": 0.17233294255568582
+        "0-17": 0.14397321428571427,
+        "18-64": 0.640625,
+        "65+": 0.21540178571428573
       },
-      "median": 44.1,
-      "tv_vs_census": 0.038
+      "median": 48.8,
+      "tv_vs_census": 0.077
     },
     "names": {
-      "first_in_us_list": 0.20446927374301677,
-      "last_in_us_list": 0.2111731843575419,
-      "distinct_first_per_100": 89.49720670391062,
-      "distinct_last_per_100": 50.279329608938546,
-      "patients_sharing_full_name": 0.0
+      "first_in_us_list": 1.0,
+      "last_in_us_list": 1.0,
+      "distinct_first_per_100": 38.120950323974085,
+      "distinct_last_per_100": 50.86393088552916,
+      "patients_sharing_full_name": 0.021834061135371178
     },
     "plausibility": {
-      "episodes_checked": 894,
-      "obstetric_episodes": 91,
+      "episodes_checked": 945,
+      "obstetric_episodes": 82,
       "obstetric_outside_age_12_55": 0,
-      "obstetric_with_male_only_name": 4,
-      "child_episodes": 158,
+      "obstetric_with_male_only_name": 0,
+      "child_episodes": 138,
       "child_with_adult_only_diagnosis": 1
     },
     "hba1c": {
@@ -142,73 +142,73 @@
         "share_ge_6_5": null
       },
       "other": {
-        "n": 112,
-        "median": 6.1,
+        "n": 102,
+        "median": 6.0,
         "share_ge_6_5": 0.0
       }
     },
     "multimorbidity": {
-      "45-64": 1.31,
+      "45-64": 1.32,
       "65+": 1.35,
-      "<45": 1.27
+      "<45": 1.25
     },
     "stays": {
-      "share_of_episodes_with_stay": 0.025,
-      "n": 35,
-      "los_mean": 5.2,
-      "los_median": 4,
-      "cost_median": 8154,
-      "cost_mean": 11081
+      "share_of_episodes_with_stay": 0.282,
+      "n": 394,
+      "los_mean": 3.74,
+      "los_median": 2.0,
+      "cost_median": 9037,
+      "cost_mean": 16205
     },
     "diagnoses": {
-      "distinct": 58,
-      "top5_share": 0.629,
-      "evenness": 0.657,
+      "distinct": 75,
+      "top5_share": 0.351,
+      "evenness": 0.831,
       "top": [
         [
           "gingivitis",
-          506
-        ],
-        [
-          "normal pregnancy",
-          131
+          143
         ],
         [
           "acute bronchitis",
-          82
+          107
+        ],
+        [
+          "normal pregnancy",
+          100
+        ],
+        [
+          "chronic congestive heart failure",
+          63
         ],
         [
           "acute viral pharyngitis",
-          64
+          59
+        ],
+        [
+          "history of coronary artery bypass grafting",
+          58
         ],
         [
           "dependent drug abuse",
-          54
-        ],
-        [
-          "fracture of bone",
-          45
+          56
         ],
         [
           "loss of teeth",
-          42
-        ],
-        [
-          "laceration - injury",
-          32
+          53
         ]
       ]
     },
     "vocabulary": {
-      "distinct_procedures": 148,
-      "distinct_medicines": 106,
-      "distinct_lab_tests": 86,
-      "distinct_providers": 201
+      "distinct_procedures": 176,
+      "distinct_medicines": 113,
+      "distinct_lab_tests": 80,
+      "distinct_providers": 206
     },
     "identifiers": {
-      "phones_with_555_prefix": 0.067,
-      "emails_on_reserved_domains": 0.0,
-      "distinct_email_domains": 3,
+      "phones_fictional": 1.0,
+      "emails_on_reserved_domains": 1.0,
+      "distinct_email_domains": 4,
       "zip_matches_state": 1.0,
       "distinct_cities": 258
     }

@@ -1,0 +1,11 @@
+{
+  "frozen_on": "2026-10-18",
+  "sha256": {
+    "corpus/test_golden.jsonl": "2f6ff05ca0ed8b7cd412f3448fded3baa349db52b6a10ac0affcd133fecf7c0e",
+    "corpus/test_hard.jsonl": "fcfabb12ba7dfc175211829f647f38c4e5fbc43c780c34744d602925e6214550",
+    "corpus/real_ocr.jsonl": "84d0c39cbe1bbfaf6208c7dbf397ad7fe22a03d6b717dfba8eb5b1b760939e88",
+    "corpus_synthea/test_golden.jsonl": "509cb507acc8ea5ed02c08c686ec4479e9ffb8e3acc55895c7e2c7deefec71a1",
+    "corpus_synthea/test_hard.jsonl": "cfeca102199649a7df9052a02200911e8fd6dd418d4fc7c73528af49b9b00701",
+    "corpus_synthea/real_ocr.jsonl": "ce411db9e8280e517f78902abb075b58aec3954fccd9f20f187801531dd6e7a0"
+  }
+}

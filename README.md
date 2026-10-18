@@ -19,8 +19,8 @@ The full problem definition and business case is in [docs/M1_Problem_Definition_
 | Milestone | Deliverable | State |
 |---|---|---|
 | M1 Problem definition | Problem brief, users, KPIs, feasibility, repository | Done. Gaps found in review are settled in [decision_log.md](docs/decision_log.md) |
-| M2 Data preparation | Synthetic corpora, data card, EDA, cleaning, splits, privacy notes, realism comparison | Done. Main dataset is Synthea + Faker |
-| M3 Baselines and models | Rule and TF-IDF baselines, fine-tuned candidates, experiment log | Next (pre-M3 items in [PLAN.md](docs/PLAN.md#before-m3-open-items)) |
+| M2 Data preparation | Synthetic corpora, data card, EDA, cleaning, splits, privacy notes, realism comparison | Done. Main dataset is Synthea + Faker v2 |
+| M3 Baselines and models | Rule and TF-IDF baselines, fine-tuned candidates, experiment log | Next ([open items](docs/PLAN.md#before-m3-open-items)) |
 | M4 Evaluation | Error analysis, OCR robustness, threshold choice | Planned |
 | M5 Deployment prototype | FastAPI service, Docker, monitoring, fallbacks | Planned |
 | M6 Final delivery | Report, live demo, presentation | Planned |
@@ -31,19 +31,19 @@ There are two corpora with the same format, layouts, noise and splits, stored se
 
 | corpus | source | documents | role |
 |---|---|---|---|
-| `data/corpus_synthea/` | Synthea patient histories + Faker identifiers | 5,105 from 1,096 patients | **Main dataset** |
+| `data/corpus_synthea/` | Synthea patient histories + Faker names and identifiers (v2, rebalanced) | 5,591 from 1,100 patients | **Main dataset** |
 | `data/corpus/` | In-house generator | 6,802 from 1,100 patients | Balanced, privacy-safe control set |
 
-Synthea + Faker won the [realism comparison](docs/realism_comparison.md) on age mix, clinical plausibility, stays and costs, and vocabulary. It still needs rebalancing before M3, because it has very few discharge summaries and high-value documents (see [PLAN.md](docs/PLAN.md)).
+Synthea + Faker won the [realism comparison](docs/realism_comparison.md) on age mix, clinical plausibility, stays and costs, and vocabulary. Version 2 is rebalanced so every document type and route has enough examples (see [PLAN.md](docs/PLAN.md#step-6-rebalancing-the-main-dataset-done-2026-10-18)). The test sets are frozen by hash in `data/FROZEN_TEST_SETS.json`.
 
 Each corpus has four splits plus a real-scan set:
 
 | split | Synthea + Faker | in-house | what it is for |
 |---|---|---|---|
-| `train` | 3,582 | 4,689 | training |
-| `val` | 496 | 709 | tuning, choosing confidence thresholds |
-| `test_golden` | 521 | 682 | frozen final score, never tuned on |
-| `test_hard` | 506 | 722 | held-out layouts, heavy noise, OCR-style text |
+| `train` | 3,940 | 4,689 | training |
+| `val` | 586 | 709 | tuning, choosing confidence thresholds |
+| `test_golden` | 504 | 682 | frozen final score, never tuned on |
+| `test_hard` | 561 | 722 | held-out layouts, heavy noise, OCR-style text |
 | `real_ocr` | 150 | 150 | golden docs rendered to images and read back with Tesseract |
 
 Splits are by patient, and one layout per document type appears only in `test_hard`. More detail:
@@ -51,7 +51,7 @@ Splits are by patient, and one layout per document type appears only in `test_ha
 * [Architecture](docs/ARCHITECTURE.md): runtime pipeline, privacy boundary, data pipeline, code map
 * [Plan and history](docs/PLAN.md): phase-by-phase record, redone steps, pre-M3 checklist
 * [Data card](docs/data_card.md): how the corpus is built, record format, limitations
-* [EDA](docs/eda.md): distributions, PII density, routing ambiguity, vocabulary shift, leakage checks
+* [EDA, main dataset](docs/eda_synthea.md) and [EDA, in-house](docs/eda.md): distributions, PII density, routing ambiguity, vocabulary shift, leakage checks
 * [Privacy notes](docs/privacy_notes.md): what is masked, the two-tier rules, why the data is safe to publish
 * [Realism comparison](docs/realism_comparison.md): in-house vs Synthea + Faker against Census and HCUP reference figures
 * [Decision log](docs/decision_log.md): M1 review fixes and every M2 change to the plan, including the switch to Synthea + Faker
@@ -63,7 +63,7 @@ M1 and M2 need only Python 3.10+ and no third-party packages.
 ```bash
 python3 scripts/generate_corpus.py      # rebuild data/corpus/ (deterministic, about 1 second)
 python3 scripts/eda.py                  # rewrite docs/eda.md and reports/eda_stats.json
-python3 -m unittest -v                  # generator, routing and span tests
+python3 -m unittest -v                  # generator, routing, span and frozen-test-set checks
 ```
 
 Synthea + Faker corpus, real-scan OCR sets and the realism report (need the project venv, Java and Tesseract):
